@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <style>
+  /* Background image */
+  body {
+    background-image: url('/static/background.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Glass effect */
+  .glass {
+    background-color: rgba(0, 0, 0);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px;
+    padding: 50px;
+<!--    margin: 20px;-->
+  }
+
+  #overlay {
+  position: absolute;
+  width:6%;
+  top: 10%;
+  left: 4%;
+  transform: translate(-50%, -50%);
+}
+</style>
+
+    <title>TTU Graduate Handbook Chatbot</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- FontAwesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body onload="checkInput()" class="glass">
+  <img src="{{ url_for('static', filename='overlay.png') }}" id="overlay">
+
+        <div class="container mt-5">
+      <h1 class="text-center">TTU CS Graduate Handbook ChatBot</h1>
+      <div class="row justify-content-center mt-5">
+        <div class="col-md-6 col-sm-12">
+          <form action="/submit" method="post" class="align-items-center">
+<!--            <label for="input_text">How can I assist you ?</label>-->
+            <br>
+            <div class="input-group">
+              <input type="text" placeholder="How may I assist you?" class="form-control" id="input_text" name="input_text"
+                     value="{{ text_query }}" required>
+               <div class="input-group-append">
+              <button class="btn btn-primary" style="background-color: #e90802; border-color: #e90802;" onclick="startListening()">
+                <i class="fa fa-microphone" style="color:white"></i>
+              </button>
+            </div>
+            </div>
+
+            <div class="form-group text-center mt-4">
+              <input type="submit" id="submit_btn" value="Submit" style="background-color: #e90802; border-color: #e90802;" hidden="hidden">
+            </div>
+          </form>
+
+<!--          <form action="submitsparc" method="POST">-->
+            <div>
+            <div class="form-group text-center">
+<!--              <label for="asp_query">ASP query:</label>-->
+              <input type="text" placeholder="ASP Query" class="form-control" id="asp_query" name="asp_query"
+                     value="{{ asp_query|default('') }}" readonly hidden="hidden">
+
+            </div>
+            <input type="text" class="form-control" id="input_text_hidden" name="input_text_hidden" value="{{ text_query }}"
+                   required hidden="hidden">
+            <div class="form-group text-center">
+                <input class="btn btn-primary btn-block" type="submit" id="submit_sparc" onclick="submitsparc()" style="background-color: #e90802; border-color: #e90802;" value="Submit">
+            </div>
+             <div class="<!--text-center-->">
+              <label for="result_text" style="align:left">Result:</label>
+              <textarea class="form-control" id="result_text" placeholder="The SPARC output is displayed here..." name="result_text" style="height:250px;" readonly></textarea>
+            </div>
+            </div>
+<!--          </form>-->
+            <br>
+            <form action="clearall" method="POST">
+            <div class="form-group text-center">
+                <input class="btn btn-primary btn-block" style="background-color: #e90802; border-color: #e90802;" type="submit" id="clear_all" value="Clear All">
+            </div>
+            </form>
+        </div>
+      </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function startListening() {
+            const recognition = new webkitSpeechRecognition();
+            recognition.onresult = function(event) {
+                const command = event.results[0][0].transcript;
+                document.getElementById("input_text").value = command;
+                document.getElementById("submit_btn").click();
+            };
+            recognition.start();
+        }
+
+        function checkInput() {
+          var inputValue = document.getElementById("asp_query").value;
+          var submitButton = document.getElementById("submit_sparc");
+          var resultText = document.getElementById("result_text").value;
+          if (inputValue == "" || inputValue =="Sorry, I could not find a matching query for your input") {
+            submitButton.disabled = true;
+            if(inputValue =="Sorry, I could not find a matching query for your input"){
+                document.getElementById("result_text").value=" Wrong Query Please Clear All and Try Again !! "
+            }
+          } else {
+            submitButton.disabled = false;
+          }
+        }
+
+
+        var isClose=true;
+        const stopwords = ["of", "the", "a", "an", "any", "is", "can", "who", "what", "why", "whom"];
+        var editor = "sorts\n" +
+            "    #coursecodes = {cs5368, cs5381, cs5376, cs5342, cs5331, cs6345, cs5120, cs5383, cs6359, cs5373, cs5340, cs5333, cs5379, cs5377, cs6378, cs6343,cs5364, cs5356, cs5374 }.\n" +
+            "    #coursetypes = {masters, phd}.\n" +
+            "    #mincredits = {37, 72}.\n" +
+            "    #coursetitles = {intelligentsystems, aerialcomputing, computernetworks, communicationnetworks, networksecurity, analysisofalgorithms, mobiledatamanagement, digitalforensics, graduateseminar, theoryofautomata, datasecurityandprivacy, softwaremodelingandarchitecture, introductiontoinformationandcomputersecurity,specialtopicsinsecurity, cryptography,softwaresecurity, distributedcomputing, parallelprocessing, informationretrieval,  advanceddatabasemanagementsystems, softwareverificationandvalidation}.\n" +
+            "    #minsessions = {5, 7}.\n" +
+            "predicates\n" +
+            "    coursecode(#coursecodes).\n" +
+            "    coursetitle(#coursetitles).\n" +
+            "    coursetype(#coursetypes).\n" +
+            "    mincredit(#mincredits).\n" +
+            "    hasCoursecode(#coursetitles, #coursecodes).\n" +
+            "    requiresCredits(#coursetypes, #mincredits).\n" +
+            "    minsession(#minsessions).\n" +
+            "rules\n" +
+            "    coursetype(masters).\n" +
+            "    coursetype(phd).\n" +
+            "    mincredit(37).\n" +
+            "    mincredit(72).\n" +
+            "    requiresCredits(masters, 37).\n" +
+            "    requiresCredits(phd, 72).\n" +
+            "    coursecode(cs5331).\n" +
+            "    coursecode(cs5368).\n" +
+            "    coursecode(cs5376).\n" +
+            "    coursecode(cs5381).\n" +
+            "    coursecode(cs6345).\n" +
+            "    coursecode(cs5120).\n" +
+            "    coursecode(cs5383).\n" +
+            "    coursecode(cs6359).\n" +
+            "    coursecode(cs5373).\n" +
+            "    coursecode(cs5340).\n" +
+            "    coursecode(cs5333).\n" +
+            "    coursecode(cs6343).\n" +
+            "    coursecode(cs6378).\n" +
+            "    coursecode(cs5377).\n" +
+            "    coursecode(cs5379).\n" +
+            "    coursecode(cs5374).\n" +
+            "    coursetitle(introductiontoinformationandcomputersecurity).\n" +
+            "    coursetitle(communicationnetworks).\n" +
+            "    coursetitle(intelligentsystems).\n" +
+            "    coursetitle(networksecurity).\n" +
+            "    coursetitle(analysisofalgorithms).\n" +
+            "    coursetitle(mobiledatamanagement).\n" +
+            "    coursetitle(digitalforensics).\n" +
+            "    coursetitle(graduateseminar).\n" +
+            "    coursetitle(theoryofautomata).\n" +
+            "    coursetitle(datasecurityandprivacy).\n" +
+            "    coursetitle(softwaremodelingandarchitecture).\n" +
+            "    coursetitle(specialtopicsinsecurity).\n" +
+            "    coursetitle(advanceddatabasemanagementsystems).\n" +
+            "    coursetitle(informationretrieval).\n" +
+            "    coursetitle(parallelprocessing).\n" +
+            "    coursetitle(distributedcomputing).\n" +
+            "    coursetitle(softwaresecurity).\n" +
+            "    coursetitle(cryptography).\n" +
+            "    coursetitle(softwareverificationandvalidation).\n" +
+            "    minsession(5).\n" +
+            "    minsession(7).\n" +
+            "    hasCoursecode(communicationnetworks, cs5376).\n" +
+            "    hasCoursecode(digitalforensics, cs6345).\n" +
+            "    hasCoursecode(networksecurity, cs5342).\n" +
+            "    hasCoursecode(analysisofalgorithms, cs5381).\n" +
+            "    hasCoursecode(mobiledatamanagement, cs5331).\n" +
+            "    hasCoursecode(aerialcomputing, cs5331).\n" +
+            "    hasCoursecode(computernetworks, cs5331).\n" +
+            "    hasCoursecode(graduateseminar, cs5120).\n" +
+            "    hasCoursecode(theoryofautomata, cs5383).\n" +
+            "    hasCoursecode(specialtopicsinsecurity, cs5333).\n" +
+            "    hasCoursecode(softwaremodelingandarchitecture, cs5373).\n" +
+            "    hasCoursecode(datasecurityandprivacy, cs6359).\n" +
+            "    hasCoursecode(introductiontoinformationandcomputersecurity, cs5340).\n" +
+            "    hasCoursecode(cryptography, cs6343).\n" +
+            "    hasCoursecode(softwaresecurity, cs6378).\n" +
+            "    hasCoursecode(informationretrieval, cs5364).\n" +
+            "    hasCoursecode(advanceddatabasemanagementsystems, cs5356).\n" +
+            "    hasCoursecode(parallelprocessing, cs5379).\n" +
+            "    hasCoursecode(distributedcomputing, cs5377).\n" +
+            "    hasCoursecode(softwareverificationandvalidation, cs5374).";
+        // sorts
+        var contstring = editor.split("sorts\n")[1].split("predicates\n");
+        var sortstring = contstring[0].split('.');
+        sortstring.splice(-1, 1);
+        var sorts = {};
+        sortstring = sortstring.map(d => d.replace(/\n/g, '').trim()).forEach(d => {
+            var par = d.split("=");
+            sorts[par[0].replace(/#/, '').trim()] = par[1].replace(/{|}/g, '').split(',').map(w => w.trim())
+        });
+        // predicates
+        var predicates = {};
+        contstring = contstring[1].split("rules\n");
+        sortstring = contstring[0].split('.');
+        sortstring.splice(-1, 1);
+        sortstring.forEach(d => {
+            var part = d.replace(/\n/g, '').trim().split('(');
+            var func = part[0];
+            predicates[func] = {};
+            var par = part[1].split(',').map(e => e.replace(/#|\)/g, '').trim());
+            var par1 = sorts[par[0]].slice();
+            par1.push("X");
+            par.splice(0, 1);
+            par1.forEach(e => {
+                var strinh = (e == 'X' ? '' : (e + ' ')) + func;
+                predicates[func][strinh] = func + "(" + e + ")";
+                par.forEach(par2 => {
+                    var temp = sorts[par2].slice();
+                    temp.push("X");
+                    temp.forEach(t => {
+                        var strinh = (e == 'X' ? '' : (e + ' ')) + func + (t == 'X' ? '' : (' ' + t));
+                        // if (strinh != fubnc)
+                        predicates[func][strinh] = func + "(" + e + "," + t + ")";
+                    })
+                });
+            });
+        });
+
+
+        var all_predicates = [];
+        for (var key1 in predicates) {
+            if (predicates.hasOwnProperty(key1)) {
+                for (var key2 in predicates[key1]) {
+                    if (predicates[key1].hasOwnProperty(key2))
+                        all_predicates.push(key2);
+                }
+            }
+
+        }
+        all_predicates.push('speak spanish'); // extra terms
+        const answerBox = document.getElementById('result_text');
+
+    function submitsparc(){
+
+        const queryQues = document.getElementById('asp_query').value;
+        var data = {
+                    'action': "getQuery",
+                    'query': queryQues,
+                    'editor': editor
+                };
+
+          console.log(data)
+
+
+
+          $.ajax({
+          url: "https://cors-anywhere.herokuapp.com/http://wave.ttu.edu/ajax.php",
+          type: "POST",
+          headers: {
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          data: {
+            action: "getQuery",
+            query: queryQues,
+            editor: editor
+          },
+          success: function(response) {
+            console.log(response);
+             const answer = response || 'Sorry, I could not find an answer.';
+             const output = response.replace(/<[^>]*>/g, '');
+             if (output.includes("is")) {
+            sparc_result = output.split(" is ");
+            } else if (output.includes("are")) {
+            sparc_result = output.split(" are ");
+            } else {
+            sparc_result = [output];
+            }
+
+             answerBox.innerHTML = sparc_result[0]+"is \n \n"+sparc_result[1];
+          },
+          error: function(xhr, status, error) {
+            console.log("error: " + error);
+          }
+        });
+
+    }
+
+    </script>
+  </body>
+</html>
