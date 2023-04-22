@@ -46,7 +46,7 @@
 <!--            <label for="input_text">How can I assist you ?</label>-->
             <br>
             <div class="input-group">
-              <input type="text" placeholder="How may I assist you?" class="form-control" id="input_text" name="input_text"
+              <input type="text" onkeyup="enableSubmit()" placeholder="How may I assist you?" class="form-control" id="input_text" name="input_text"
                      value="{{ text_query }}" required>
                <div class="input-group-append">
               <button class="btn btn-primary" style="background-color: #e90802; border-color: #e90802;" onclick="startListening()">
@@ -71,7 +71,7 @@
             <input type="text" class="form-control" id="input_text_hidden" name="input_text_hidden" value="{{ text_query }}"
                    required hidden="hidden">
             <div class="form-group text-center">
-                <input class="btn btn-primary btn-block" type="submit" id="submit_sparc" onclick="submitsparc()" style="background-color: #e90802; border-color: #e90802;" value="Submit">
+                <input class="btn btn-primary btn-block" type="submit" id="submit_sparc" onclick="submitsparc()" style="background-color: #e90802; border-color: #e90802;" value="Submit" disabled>
             </div>
              <div class="<!--text-center-->">
               <label for="result_text" style="align:left">Result:</label>
@@ -104,7 +104,9 @@
             recognition.start();
         }
 
+
         function checkInput() {
+
           var inputValue = document.getElementById("asp_query").value;
           var submitButton = document.getElementById("submit_sparc");
           var resultText = document.getElementById("result_text").value;
@@ -115,33 +117,109 @@
             }
           } else {
             submitButton.disabled = false;
+            submitsparc();
           }
+        }
+        function enableSubmit(){
+        var submitButton = document.getElementById("submit_sparc");
+        submitButton.disabled = false;
+
         }
 
 
         var isClose=true;
         const stopwords = ["of", "the", "a", "an", "any", "is", "can", "who", "what", "why", "whom"];
         var editor = "sorts\n" +
-            "    #coursecodes = {cs5368, cs5381, cs5376, cs5342, cs5331, cs6345, cs5120, cs5383, cs6359, cs5373, cs5340, cs5333, cs5379, cs5377, cs6378, cs6343,cs5364, cs5356, cs5374 }.\n" +
-            "    #coursetypes = {masters, phd}.\n" +
-            "    #mincredits = {37, 72}.\n" +
-            "    #coursetitles = {intelligentsystems, aerialcomputing, computernetworks, communicationnetworks, networksecurity, analysisofalgorithms, mobiledatamanagement, digitalforensics, graduateseminar, theoryofautomata, datasecurityandprivacy, softwaremodelingandarchitecture, introductiontoinformationandcomputersecurity,specialtopicsinsecurity, cryptography,softwaresecurity, distributedcomputing, parallelprocessing, informationretrieval,  advanceddatabasemanagementsystems, softwareverificationandvalidation}.\n" +
-            "    #minsessions = {5, 7}.\n" +
+            "    #coursecodes = {cs5368, cs5381,cs5332,cs5384,cs5375,cs5352,cs5363, cs5376, cs5342, cs5331, cs6345, cs5120, cs5383, cs6359, cs5373, cs5340, cs5333, cs5379, cs5377, cs6378, cs6343,cs5364, cs5356, cs5374 }.\n" +
+            "        #programtypes = {mastersnt,masterst, phd, grad}. \n" +
+            "        #mincredits = {31,37, 72}. \n" +
+            "        #coursetitles = {intelligentsystems, aerialcomputing, computernetworks, computersystemsorganizationandarchitecture,communicationnetworks, networksecurity, analysisofalgorithms, mobiledatamanagement, digitalforensics, graduateseminar, theoryofautomata, datasecurityandprivacy, softwaremodelingandarchitecture, introductiontoinformationandcomputersecurity,specialtopicsinsecurity, cryptography,softwaresecurity, distributedcomputing, parallelprocessing, informationretrieval,  advanceddatabasemanagementsystems, softwareverificationandvalidation,specialtopicsinsoftwareengineering,softwareprojectmanagement,logicforcomputerscientists}. \n" +
+            "            #mincredithrs = {9}.  \n" +
+            "            #maxyears = {6}.  \n" +
+            "            #mingrades = {b}.  \n" +
+            "            #teachlangs = {english}.  \n" +
+            "                #progevals = {september1}. \n" +
+            "                #mincourses = {20}.   \n" +
+            "                #reqseminars = {8}.   \n" +
+            "                    #req8000credithrs = {12, 8}.    \n" +
+            "                        #reqpublications = {4}.    \n" +
+            "                    #minsessions = {5, 7}.    \n" +
+            "                    #mincumulativegpas= {3}.     \n" +
+            "                    #spec={se,cs}.    \n" +
+            "                    #electivehours = {21}.   \n" +
+            "                        #electivehoursfromse = {12}.     \n" +
+            "                        #coursetypes = {elective, core}.     \n" +
             "predicates\n" +
             "    coursecode(#coursecodes).\n" +
             "    coursetitle(#coursetitles).\n" +
-            "    coursetype(#coursetypes).\n" +
+            "    programtype(#programtypes). \n" +
             "    mincredit(#mincredits).\n" +
-            "    hasCoursecode(#coursetitles, #coursecodes).\n" +
-            "    requiresCredits(#coursetypes, #mincredits).\n" +
-            "    minsession(#minsessions).\n" +
+            "        mincredithr(#mincredithrs). \n" +
+            "            maxyear(#maxyears).  \n" +
+            "        mingrade(#mingrades).  \n" +
+            "    teachlang(#teachlangs).  \n" +
+            "    progeval(#progevals). \n" +
+            "    mincourse(#mincourses). \n" +
+            "    reqseminar(#reqseminars). \n" +
+             "    req8000credithr(#req8000credithrs).   \n" +
+            "    reqpublication(#reqpublications).  \n" +
+            "    hasCoursecode(#coursetitles, #coursecodes).  \n" +
+            "    requiresCredits(#programtypes, #mincredits).  \n" +
+            "    requiresCredithrs(#programtypes, #mincredithrs).   \n" +
+            "    maximumyears(#programtypes, #maxyears).   \n" +
+            "    minavegrade(#programtypes, #mingrades).   \n" +
+            "    teachinglang(#programtypes, #teachlangs).   \n" +
+            "    programeval(#programtypes, #progevals).   \n" +
+            "    minimumcourses(#programtypes, #mincourses).   \n" +
+            "        requiredseminars(#programtypes, #reqseminars).   \n" +
+            "    req8000credithrs(#programtypes, #req8000credithrs).    \n" +
+            "    gradsemreq8000hrs(#programtypes, #req8000credithrs).    \n" +
+            "    phdreqpublications(#programtypes, #reqpublications).    \n" +
+            "    minsession(#minsessions).    \n" +
+            "    electives(#spec, #coursetitles).    \n" +
+            "    cores(#spec, #coursetitles).    \n" +
+            "    mincumulativegpa(#mincumulativegpas).     \n" +
+            "    electivehour(#electivehours).     \n" +
+            "    electivehourfromse(#electivehoursfromse).     \n" +
+            "    coursetypeCS(#coursecodes, #coursetypes).     \n" +
+            "    coursetypeSE(#coursecodes, #coursetypes).     \n" +
+            "    isCoreCS(#coursetitles).     \n" +
+            "    isElectiveCS(#coursetitles).      \n" +
+            "    isCoreSE(#coursetitles).      \n" +
+            "    isElectiveSE(#coursetitles).     \n" +
             "rules\n" +
-            "    coursetype(masters).\n" +
-            "    coursetype(phd).\n" +
-            "    mincredit(37).\n" +
-            "    mincredit(72).\n" +
-            "    requiresCredits(masters, 37).\n" +
+            "    programtype(mastersnt). \n" +
+            "    programtype(masterst). \n" +
+            "    programtype(phd).  \n" +
+            "    programtype(grad).  \n" +
+            "    mincumulativegpa(3).  \n" +
+            "    mincredit(37).  \n" +
+            "    mincredit(72).   \n" +
+            "    mincredithr(9).  \n" +
+            "    electivehour(21). \n" +
+            "    electivehourfromse(12). \n" +
+            "    maxyear(6).   \n" +
+            "    mingrade(b).   \n" +
+            "    teachlang(english).   \n" +
+            "    progeval(september1).  \n" +
+            "    mincourse(20).  \n" +
+                        "    reqseminar(8).    \n" +
+            "    req8000credithr(12).    \n" +
+            "    req8000credithr(8).   \n" +
+            "    reqpublication(4).   \n" +
+            "    requiresCredits(mastersnt, 37).\n" +
+            "    requiresCredits(masterst, 31).\n" +
             "    requiresCredits(phd, 72).\n" +
+            "    requiresCredithrs(mastersnt, 9). \n" +
+            "    maximumyears(mastersnt, 6). \n" +
+            "    minavegrade(grad, b). \n" +
+                        "    teachinglang(grad, english). \n" +
+            "    programeval(grad, september1). \n" +
+            "    minimumcourses(phd, 20). \n" +
+            "    requiredseminars(phd, 8).  \n" +
+            "    req8000credithrs(phd, 12).  \n" +
+            "    gradsemreq8000hrs(phd, 8).  \n" +
+            "    phdreqpublications(phd, 4).   \n" +
             "    coursecode(cs5331).\n" +
             "    coursecode(cs5368).\n" +
             "    coursecode(cs5376).\n" +
@@ -198,7 +276,24 @@
             "    hasCoursecode(advanceddatabasemanagementsystems, cs5356).\n" +
             "    hasCoursecode(parallelprocessing, cs5379).\n" +
             "    hasCoursecode(distributedcomputing, cs5377).\n" +
-            "    hasCoursecode(softwareverificationandvalidation, cs5374).";
+            "    hasCoursecode(softwareverificationandvalidation, cs5374).\n"+
+            "    hasCoursecode(specialtopicsinsoftwareengineering, cs5332).\n"+
+            "     hasCoursecode(softwareprojectmanagement, cs5363).\n"+
+            "    hasCoursecode(logicforcomputerscientists, cs5384).\n"+
+            "    hasCoursecode(intelligentsystems, cs5368).\n"+
+            "    hasCoursecode(computersystemsorganizationandarchitecture, cs5375).\n"+
+            "     coursetypeCS(cs5381, core).\n"+
+                "coursetypeCS(cs5384, core).\n"+
+                    "coursetypeCS(cs5375, core).\n"+
+                        "coursetypeCS(cs5352, core).\n"+
+    "coursetypeCS(cs5383, core). \n"+
+    "coursetypeCS(cs5368, core). \n"+
+    "coursetypeSE(cs5373, core). \n"+
+    "coursetypeSE(cs5340, core). \n"+
+    "isCoreCS(X):- hasCoursecode(X, Y), coursetypeCS(Y, core).\n"+
+    "isElectiveCS(X):- not isCoreCS(X). \n"+
+    "isCoreSE(X):- hasCoursecode(X, Y), coursetypeSE(Y, core).\n"+
+    "isElectiveSE(X):- not isCoreSE(X).";
         // sorts
         var contstring = editor.split("sorts\n")[1].split("predicates\n");
         var sortstring = contstring[0].split('.');
@@ -253,6 +348,11 @@
     function submitsparc(){
 
         const queryQues = document.getElementById('asp_query').value;
+        if(queryQues==""){
+        document.getElementById("submit_btn").click();
+
+        }
+
         var data = {
                     'action': "getQuery",
                     'query': queryQues,
@@ -260,8 +360,6 @@
                 };
 
           console.log(data)
-
-
 
           $.ajax({
           url: "https://cors-anywhere.herokuapp.com/http://wave.ttu.edu/ajax.php",
@@ -278,15 +376,15 @@
             console.log(response);
              const answer = response || 'Sorry, I could not find an answer.';
              const output = response.replace(/<[^>]*>/g, '');
-             if (output.includes("is")) {
+             if (output.includes(" is ")) {
             sparc_result = output.split(" is ");
-            } else if (output.includes("are")) {
+            } else if (output.includes(" are ")) {
             sparc_result = output.split(" are ");
             } else {
             sparc_result = [output];
             }
 
-             answerBox.innerHTML = sparc_result[0]+"is \n \n"+sparc_result[1];
+             answerBox.innerHTML = sparc_result[0]+" is "+sparc_result[1];
           },
           error: function(xhr, status, error) {
             console.log("error: " + error);
