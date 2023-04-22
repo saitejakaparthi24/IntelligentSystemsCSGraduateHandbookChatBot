@@ -15,7 +15,32 @@ asp_queries = {
     "How many credits requires for Masters of Science in Software and Security Engineering": "credits(MSSSE,X)",
     "How many credits requires for Certificate in Software Engineering": "credits(SE,X)",
     "How many credits requires for Certificate in Security": "credits(Security,X)",
-    "What is course code of cs5331":"hasCoursecode(X, cs5331)"
+    "What is course code of cs5331":"hasCoursecode(X, cs5331)",
+    "What is course code of Mobile Data Management":"hasCoursecode(MDM, X)",
+    "What is the minimum credit hour requirement for graduate students during each semester (fall and spring)?":"requiresCredithrs(masters, X)",
+    "What is the maximum time limit for completing coursework in an M.S. program? (6 years)":"maximumyears(masters, X)",
+    "In which language is the graduate coursework at TTU conducted?": "teachinglang(grad, X)",
+    "What is the minimum average grade requirement for graduate students?":"minavegrade(grad, X)",
+    "When will graduate student’s progress be evaluated?":"programeval(grad, X)",
+    "What is the minimum number of CS courses required for Ph.D. students?":"minimumcourses(phd, X)",
+    "What is the annual attendance requirement for Ph.D. students in CS seminars?":"requiredseminars(phd, X)",
+    "How many credit hours of 8000-level courses are required for Ph.D. students?":"req8000credithrs(phd, X)",
+    "How many credit hours of 8000-level courses are required during the graduating semester for Ph.D. students?":"gradsemreq8000hrs(phd, X)",
+    "How many accepted publications are required for Ph.D students to graduate?":"phdreqpublications(phd, X)",
+    "What is the minimum cumulative GPA requirement for students to maintain every semester as per the policy of the Graduate School?":"mincumulativeGPA(X)",
+    "List the core coureses in Computer Science":"isCoreCS(X)",
+    "List the core coureses in Software Engineering":"isCoreSE(X)",
+    "Is CS 5375 core course for cs?":"coursetypeCS(cs5375, X)",
+    "What is the total number of credits required for degree plan for an MS Thesis program,as per the program guidelines?":"requiresCredits(masterst, X)",
+    "What is the total number of credits required for degree plan for an MS non-Thesis program,as per the program guidelines?":"requiresCredits(mastersnt, X)",
+    "Is CS 5373 is core course in MS3E degree?":"coursetypeSE(cs5373, X)",
+    "What is the total number of credits required for degree plan for an MS3E Thesis program,as per the program guidelines?":"requiresCredits(masterst,X)",
+    "What is the total number of credits required for degree plan for an MS3E non-Thesis program,as per the program guidelines?":"requiresCredits(mastersnt, X)",
+    "List the electives in SE":"isElectiveSE(X)",
+    "List the cores in SE":"isCoreSE(X)",
+    "What is the total number of elective hours required for the MS3E program ?":"electivehour(X)",
+    "how many of the elective hours must be from the Software Engineering Electives category, as per the MS3E program guidelines?":"electivehourfromse(X)"
+
     # add more abstract questions and corresponding ASP queries here
 }
 
